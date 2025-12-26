@@ -1,0 +1,21 @@
+/target
+/cli/target
+/build
+/releases
+/dysk_*.zip
+/lfs_*.zip
+/trav
+/graphics
+/.bacon-locations
+/zigbuild
+/.intentionally-empty-file.o
+/musl-build.sh
+
+# Script files
+*.sh
+
+# Backup files and directories
+*backup*
+*bak*
+*.bak
+backup/

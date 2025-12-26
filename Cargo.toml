@@ -1,0 +1,38 @@
+[package]
+name = "provis"
+version = "3.6.0"
+authors = ["dystroy <denys.seguret@gmail.com>"]
+edition = "2018"
+keywords = ["linux", "mac", "filesystem", "disk"]
+license = "MIT"
+categories = ["filesystem", "command-line-utilities"]
+description = "Live process monitor with graphical resource usage"
+repository = "https://github.com/mikesdatawork/provis"
+homepage = "https://github.com/mikesdatawork/provis"
+documentation = "https://github.com/mikesdatawork/provis"
+readme = "README.md"
+rust-version = "1.75"
+exclude = ["website", "dysk*.zip"]
+build = "build.rs"
+resolver = "2"
+
+[dependencies]
+provis-cli = { version = "3.6.0", path = "cli" } # beware: version is also in build dependencies
+
+[build-dependencies]
+clap = { version = "4.4", features = ["derive", "cargo"] }
+clap_complete = "4.4"
+clap_mangen = "0.2.12"
+provis-cli = { version = "3.6.0", path = "cli" }
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.7"
+
+[profile.release]
+strip = true
+
+[patch.crates-io]
+# bet = { path = "../bet" }
+# minimad = { path = "../minimad" }
+# termimad = { path = "../termimad" }
+# clap-help = { path = "../clap-help" }
+# lfs-core = { path = "../lfs-core" }
