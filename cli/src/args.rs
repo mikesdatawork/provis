@@ -96,6 +96,12 @@ pub struct Args {
     pub timeout: Option<Timeout>,
 
     /// if provided, only the device holding this path will be shown
+    /// show process information instead of disk information
+
+    #[arg(short, long)]
+
+    pub processes: bool,
+
     pub path: Option<std::path::PathBuf>,
 }
 

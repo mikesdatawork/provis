@@ -9,7 +9,7 @@ use {
         Generator,
         Shell,
     },
-    dysk_cli::args::Args,
+    provis_cli::args::Args,
     serde::Deserialize,
     std::{
         env,
@@ -67,8 +67,8 @@ fn check_version_consistency() {
     }
     #[derive(Deserialize)]
     struct Dependencies {
-        #[serde(alias = "dysk-cli")]
-        dysk_cli: DependencyRef,
+        #[serde(alias = "provis-cli")]
+        provis_cli: DependencyRef,
     }
     #[derive(Deserialize)]
     struct MainCargo {
@@ -91,8 +91,8 @@ fn check_version_consistency() {
     };
     let cli_cargo: CliCargo = toml::from_str(&s).unwrap();
     let ok = (version == main_cargo.package.version)
-        && (version == main_cargo.dependencies.dysk_cli.version)
-        && (version == main_cargo.build_dependencies.dysk_cli.version)
+        && (version == main_cargo.dependencies.provis_cli.version)
+        && (version == main_cargo.build_dependencies.provis_cli.version)
         && (version == cli_cargo.package.version);
     if ok {
         eprintln!("Checked consistency of dysk and dysk-cli versions: OK");
