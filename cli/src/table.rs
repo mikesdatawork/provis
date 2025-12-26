@@ -18,11 +18,8 @@ use {
     },
 };
 
-// those colors are chosen to be "redish" for used, "greenish" for available
-// and, most importantly, to work on both white and black backgrounds. If you
-// find a better combination, please show me.
+// Color scheme: red for usage, default for everything else (no green)
 static USED_COLOR: u8 = 209;
-static AVAI_COLOR: u8 = 65;
 static SIZE_COLOR: u8 = 172;
 
 static BAR_WIDTH: usize = 5;
@@ -120,10 +117,10 @@ pub fn write<W: Write>(
                     Col::Used => "~~${used}~~",
                     Col::Use => "~~${use-percents}~~ ${bar}~~${use-error}~~",
                     Col::UsePercent => "~~${use-percents}~~",
-                    Col::Free => "*${free}*",
-                    Col::FreePercent => "*${free-percents}*",
+                    Col::Free => "${free}",
+                    Col::FreePercent => "${free-percents}",
                     Col::Size => "**${size}**",
-                    Col::InodesFree => "*${ifree}*",
+                    Col::InodesFree => "${ifree}",
                     Col::InodesUsed => "~~${iused}~~",
                     Col::InodesUse => "~~${iuse-percents}~~ ${ibar}",
                     Col::InodesUsePercent => "~~${iuse-percents}~~",
@@ -146,9 +143,9 @@ pub fn write<W: Write>(
 fn make_colored_skin() -> MadSkin {
     MadSkin {
         bold: CompoundStyle::with_fg(AnsiValue(SIZE_COLOR)), // size
-        inline_code: CompoundStyle::with_fgbg(AnsiValue(USED_COLOR), AnsiValue(AVAI_COLOR)), // use bar
-        strikeout: CompoundStyle::with_fg(AnsiValue(USED_COLOR)),                            // use%
-        italic: CompoundStyle::with_fg(AnsiValue(AVAI_COLOR)), // available
+        inline_code: CompoundStyle::with_fg(AnsiValue(USED_COLOR)), // use bar (red)
+        strikeout: CompoundStyle::with_fg(AnsiValue(USED_COLOR)), // use% (red)
+        // No italic/green - free uses default terminal color
         ..Default::default()
     }
 }
@@ -160,9 +157,9 @@ fn progress_bar_md(
 ) -> String {
     if ascii {
         let count = (share * bar_width as f64).round() as usize;
-        let bar: String = "".repeat(count);
-        let no_bar: String = "-".repeat(bar_width - count);
-        format!("~~{}~~*{}*", bar, no_bar)
+        let bar: String = "█".repeat(count);
+        let no_bar: String = "░".repeat(bar_width - count);
+        format!("`{}{}`", bar, no_bar)
     } else {
         let pb = ProgressBar::new(share as f32, bar_width);
         format!("`{:<width$}`", pb, width = bar_width)

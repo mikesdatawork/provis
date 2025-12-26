@@ -8,6 +8,8 @@ pub struct ProcessStats {
     pub cpu_usage: f32,
     pub mem_usage: u64,
     pub mem_percent: f32,
+    pub io_read_bytes: u64,
+    pub io_write_bytes: u64,
 }
 
 pub struct ProcessCollector {
@@ -37,6 +39,11 @@ impl ProcessCollector {
             let cpu = process.cpu_usage();
             let mem = process.memory();
             let mem_pct = ((mem as f64 / total_memory as f64) * 100.0) as f32;
+            
+            // Get disk usage (read + write bytes)
+            let disk_usage = process.disk_usage();
+            let read_bytes = disk_usage.total_read_bytes;
+            let write_bytes = disk_usage.total_written_bytes;
 
             // Aggregate by process name (combines all threads)
             process_map
@@ -45,6 +52,8 @@ impl ProcessCollector {
                     stats.cpu_usage += cpu;
                     stats.mem_usage += mem;
                     stats.mem_percent += mem_pct;
+                    stats.io_read_bytes += read_bytes;
+                    stats.io_write_bytes += write_bytes;
                 })
                 .or_insert(ProcessStats {
                     pid: pid_num,
@@ -52,6 +61,8 @@ impl ProcessCollector {
                     cpu_usage: cpu,
                     mem_usage: mem,
                     mem_percent: mem_pct,
+                    io_read_bytes: read_bytes,
+                    io_write_bytes: write_bytes,
                 });
         }
 

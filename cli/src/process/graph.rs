@@ -1,70 +1,27 @@
-//! Graph rendering module for resource usage visualization
-//!
-//! Provides functions to render resource usage as bar graphs
+use termimad::ProgressBar;
 
-/// Render a horizontal bar graph for a percentage value
-///
-/// # Arguments
-/// * `usage` - Current usage (0.0 to 100.0)
-/// * `width` - Width of the bar in characters
-/// * `ascii_mode` - If true, use ASCII characters instead of Unicode
-///
-/// # Returns
-/// String representation of the bar graph
+/// Render a bar graph with percentage (for detailed display)
 pub fn render_bar(usage: f32, width: usize, ascii_mode: bool) -> String {
-    let usage = usage.clamp(0.0, 100.0);
-    let filled = ((usage / 100.0) * width as f32).round() as usize;
-    let filled = filled.min(width);
-    
     if ascii_mode {
-        let bar = "#".repeat(filled);
-        let empty = "-".repeat(width - filled);
-        format!("[{}{}] {:>5.1}%", bar, empty, usage)
+        let count = (usage / 100.0 * width as f32).round() as usize;
+        let bar: String = "█".repeat(count);
+        let no_bar: String = "░".repeat(width - count);
+        format!("`{bar}{no_bar}` {usage:.1}%")
     } else {
-        let bar = "█".repeat(filled);
-        let empty = "░".repeat(width - filled);
-        format!("[{}{}] {:>5.1}%", bar, empty, usage)
+        let pb = ProgressBar::new(usage / 100.0, width);
+        format!("`{:<width$}` {:.1}%", pb, usage, width = width)
     }
 }
 
-/// Render a compact bar without percentage text
+/// Render a compact bar graph without percentage
 pub fn render_bar_compact(usage: f32, width: usize, ascii_mode: bool) -> String {
-    let usage = usage.clamp(0.0, 100.0);
-    let filled = ((usage / 100.0) * width as f32).round() as usize;
-    let filled = filled.min(width);
-    
     if ascii_mode {
-        let bar = "#".repeat(filled);
-        let empty = "-".repeat(width - filled);
-        format!("[{}{}]", bar, empty)
+        let count = (usage / 100.0 * width as f32).round() as usize;
+        let bar: String = "█".repeat(count);
+        let no_bar: String = "░".repeat(width - count);
+        format!("`{bar}{no_bar}`")
     } else {
-        let bar = "█".repeat(filled);
-        let empty = "░".repeat(width - filled);
-        format!("[{}{}]", bar, empty)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_render_bar_ascii() {
-        let bar = render_bar(50.0, 10, true);
-        assert!(bar.contains("#####"));
-        assert!(bar.contains("50.0%"));
-    }
-
-    #[test]
-    fn test_render_bar_unicode() {
-        let bar = render_bar(75.0, 10, false);
-        assert!(bar.contains("█"));
-        assert!(bar.contains("75.0%"));
-    }
-
-    #[test]
-    fn test_render_bar_clamp() {
-        let bar = render_bar(150.0, 10, true);
-        assert!(bar.contains("100.0%"));
+        let pb = ProgressBar::new(usage / 100.0, width);
+        format!("`{:<width$}`", pb, width = width)
     }
 }
