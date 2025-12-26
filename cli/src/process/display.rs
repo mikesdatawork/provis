@@ -1,61 +1,64 @@
-//! Process display module
-//! 
-//! Handles formatting and displaying process information
-
 use {
-    super::{ProcessCollector, render_bar},
-    crate::Args,
-    std::io::{self, Write},
+    crate::{
+        Args,
+        process::{
+            stats::ProcessCollector,
+            graph::render_bar,
+        },
+    },
+    std::{
+        io::{self, Write},
+        thread,
+        time::Duration,
+    },
     termimad::{
         MadSkin,
-        minimad::{OwningTemplateExpander, TableBuilder},
+        minimad::{OwningTemplateExpander, TableBuilder, Col, Alignment},
     },
 };
 
-/// Display process information as a table
 pub fn display_processes<W: Write>(
     w: &mut W,
     args: &Args,
 ) -> io::Result<()> {
+    // Create collector and do initial refresh
     let mut collector = ProcessCollector::new();
     collector.refresh();
     
-    // Get top 10 by CPU
+    // Wait 200ms for CPU measurements
+    thread::sleep(Duration::from_millis(200));
+    
+    // Refresh again to get CPU deltas
+    collector.refresh();
+    
+    // Get top processes by CPU
     let processes = collector.get_top_by_cpu(10);
     
-    if processes.is_empty() {
-        writeln!(w, "No processes found")?;
-        return Ok(());
-    }
-    
-    // Create table with expander
+    // Build table data
     let mut expander = OwningTemplateExpander::new();
     expander.set_default("");
     
     for process in &processes {
-        let cpu_bar = render_bar(process.cpu_usage, 10, args.ascii);
-        let mem_bar = render_bar(process.mem_percent, 10, args.ascii);
-        
         expander
             .sub("rows")
-            .set("pid", process.pid)
+            .set("pid", process.pid.to_string())
             .set("name", &process.name)
-            .set("cpu", format!("{:.1}%", process.cpu_usage))
-            .set_md("cpu-bar", &cpu_bar)
-            .set("mem", format!("{:.1}%", process.mem_percent))
-            .set_md("mem-bar", &mem_bar);
+            .set("cpu_pct", format!("{:.1}%", process.cpu_usage))
+            .set_md("cpu_bar", render_bar(process.cpu_usage, 10, args.ascii))
+            .set("mem_pct", format!("{:.1}%", process.mem_percent))
+            .set_md("mem_bar", render_bar(process.mem_percent, 10, args.ascii));
     }
     
-    // Build table structure using minimad::Col
+    // Build table structure
     let mut tbl = TableBuilder::default();
-    tbl.col(termimad::minimad::Col::new("PID", "${pid}"));
-    tbl.col(termimad::minimad::Col::new("Process", "${name}"));
-    tbl.col(termimad::minimad::Col::new("CPU%", "${cpu}"));
-    tbl.col(termimad::minimad::Col::new("CPU Usage", "${cpu-bar}"));
-    tbl.col(termimad::minimad::Col::new("MEM%", "${mem}"));
-    tbl.col(termimad::minimad::Col::new("Memory Usage", "${mem-bar}"));
+    tbl.col(Col::new("PID", "${pid}").align_content(Alignment::Right))
+        .col(Col::new("Process", "${name}").align_content(Alignment::Left))
+        .col(Col::new("CPU%", "${cpu_pct}").align_content(Alignment::Right))
+        .col(Col::new("CPU Usage", "${cpu_bar}").align_content(Alignment::Left))
+        .col(Col::new("MEM%", "${mem_pct}").align_content(Alignment::Right))
+        .col(Col::new("Memory Usage", "${mem_bar}").align_content(Alignment::Left));
     
-    // Create skin
+    // Display with color if enabled
     let mut skin = if args.color() {
         MadSkin::default()
     } else {
@@ -66,7 +69,6 @@ pub fn display_processes<W: Write>(
         skin.limit_to_ascii();
     }
     
-    // Write table
+    writeln!(w, "\nTop 10 Processes by CPU Usage:\n")?;
     skin.write_owning_expander_md(w, &expander, &tbl)
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
 }
