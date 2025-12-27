@@ -8,12 +8,13 @@ pub mod help;
 pub mod json;
 pub mod list_cols;
 pub mod normal;
-pub mod process;
 pub mod order;
 pub mod sorting;
 pub mod table;
 pub mod timeout;
 pub mod units;
+pub mod process;
+pub mod directory;
 
 use {
     crate::{
@@ -35,13 +36,8 @@ use {
 pub fn run() -> io::Result<()> {
     let mut w = io::stdout();
     let args = Args::parse();
-    
-    // Route to process display if --processes flag is set
-    if args.processes {
-        return process::display_processes(&mut w, &args);
-    }
     if args.version {
-        return writeln!(&mut w, "dysk {}", env!("CARGO_PKG_VERSION"));
+        return writeln!(&mut w, "provis {}", env!("CARGO_PKG_VERSION"));
     }
     if args.help {
         help::print(args.ascii);
@@ -57,6 +53,18 @@ pub fn run() -> io::Result<()> {
         }
         return Ok(());
     }
+
+    // Route to directory size view
+    if args.size_on_disk {
+        return directory::display_directories(&mut w, &args);
+    }
+
+    // Route to process view
+    if args.processes {
+        return process::display_processes(&mut w, &args);
+    }
+
+    // Default: disk view
     let mut options =
         lfs_core::ReadOptions::default()
         .remote_stats(args.remote_stats.unwrap_or_else(|| true));
@@ -112,7 +120,7 @@ pub fn run() -> io::Result<()> {
         );
     }
     if mounts.is_empty() {
-        return writeln!(&mut w, "no mount to display - try\n    dysk -a");
+        return writeln!(&mut w, "no mount to display - try\n    provis -a");
     }
     table::write(&mut w, &mounts, args.color(), &args)?;
     if args.color() {
@@ -125,4 +133,3 @@ pub fn run() -> io::Result<()> {
 fn csi_reset() {
     print!("\u{1b}[0m");
 }
-

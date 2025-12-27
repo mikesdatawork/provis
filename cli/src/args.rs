@@ -11,6 +11,7 @@ use {
         ValueEnum,
     },
     termimad::crossterm::tty::IsTty,
+    std::path::PathBuf,
 };
 
 /// List your filesystems.
@@ -20,7 +21,7 @@ use {
 #[command(
     author,
     about,
-    name = "dysk",
+    name = "provis",
     disable_version_flag = true,
     version,
     disable_help_flag = true
@@ -34,7 +35,7 @@ pub struct Args {
     #[arg(long)]
     pub version: bool,
 
-    /// show all mount points
+    /// show all mount points (disk view) or all directories including hidden (size-on-disk view)
     #[arg(short, long)]
     pub all: bool,
 
@@ -95,14 +96,33 @@ pub struct Args {
     #[arg(long)]
     pub timeout: Option<Timeout>,
 
-    /// if provided, only the device holding this path will be shown
-    /// show process information instead of disk information
-
+    /// show process view instead of disk view
     #[arg(short, long)]
-
     pub processes: bool,
 
-    pub path: Option<std::path::PathBuf>,
+    /// show directory size analysis
+    #[arg(long)]
+    pub size_on_disk: bool,
+
+    /// scan from root directory
+    #[arg(long)]
+    pub root: bool,
+
+    /// number of results to show (10, 20, or all)
+    #[arg(long, default_value = "20")]
+    pub limit: String,
+
+    /// subdirectory depth (default: 1 for immediate children)
+    #[arg(long, default_value = "1")]
+    pub depth: usize,
+
+    /// scan all nested folders recursively
+    #[arg(long)]
+    pub recursive: bool,
+
+    /// if provided, only the device holding this path will be shown (disk view)
+    /// or the starting path for directory scan (size-on-disk view)
+    pub path: Option<PathBuf>,
 }
 
 /// This is an Option<bool> but I didn't find any way to configure
