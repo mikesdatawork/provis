@@ -15,6 +15,7 @@ pub mod timeout;
 pub mod units;
 pub mod process;
 pub mod directory;
+pub mod commands;
 
 use {
     crate::{
@@ -41,6 +42,13 @@ pub fn run() -> io::Result<()> {
     }
     if args.help {
         help::print(args.ascii);
+        if args.color() {
+            csi_reset();
+        }
+        return Ok(());
+    }
+    if args.commands {
+        commands::print_commands(&mut w, args.color(), args.ascii)?;
         if args.color() {
             csi_reset();
         }

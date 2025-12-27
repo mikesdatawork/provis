@@ -1,0 +1,39 @@
+name: provis
+base: core22
+version: '3.6.0'
+summary: System monitoring and disk analysis tool
+description: |
+  Provis provides comprehensive system monitoring with three powerful views:
+  
+  - Filesystem view: Monitor disk usage, mount points, and storage devices
+  - Process view: Track CPU and memory usage across running processes
+  - Directory scanner: Analyze disk space usage with TreeSize-style filtering
+  
+  Built in Rust for performance and efficiency.
+
+grade: stable
+confinement: strict
+
+apps:
+  provis:
+    command: bin/provis
+    plugs:
+      - home
+      - removable-media
+      - mount-observe
+      - system-observe
+      - hardware-observe
+
+parts:
+  provis:
+    plugin: rust
+    source: .
+    build-packages:
+      - build-essential
+    stage-packages:
+      - libc6
+
+architectures:
+  - build-on: amd64
+  - build-on: arm64
+  - build-on: armhf

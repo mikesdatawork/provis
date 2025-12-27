@@ -31,6 +31,10 @@ pub struct Args {
     #[arg(long)]
     pub help: bool,
 
+    /// show command reference table
+    #[arg(long)]
+    pub commands: bool,
+
     /// print the version
     #[arg(long)]
     pub version: bool,
