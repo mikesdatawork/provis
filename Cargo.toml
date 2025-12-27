@@ -17,13 +17,13 @@ build = "build.rs"
 resolver = "2"
 
 [dependencies]
-dysk-cli = { version = "3.6.0", path = "cli" }
+provis-cli = { version = "3.6.0", path = "cli" }
 
 [build-dependencies]
 clap = { version = "4.4", features = ["derive", "cargo"] }
 clap_complete = "4.4"
 clap_mangen = "0.2.12"
-dysk-cli = { version = "3.6.0", path = "cli" }
+provis-cli = { version = "3.6.0", path = "cli" }
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.7"
 
